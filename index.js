@@ -24,16 +24,25 @@ const client = new MongoClient(uri, {
 // Mongo run() function
 async function run() {
   try {
-    
-    await client.connect(); 
+
+    await client.connect();
 
     const db = client.db('doc-appoint-a9');
-    const appointmentCollection =  db.collection('appointments');
+    const appointmentCollection = db.collection('appointments');
 
+    // all appointments
     app.get('/appointments', async (req, res) => {
       const result = await appointmentCollection.find().toArray();
       res.json(result)
     })
+
+    // featured doctors
+    app.get('/featuredDoc', async (req, res) => {
+
+      const result = await appointmentCollection.find().sort({ "rating.average": -1 }).limit(3).toArray();
+
+      res.json(result);
+    });
 
   } finally {
     // Ensures that the client will close when you finish/error
