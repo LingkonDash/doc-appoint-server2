@@ -36,6 +36,14 @@ async function run() {
       res.json(result)
     })
 
+    // single appointments
+    app.get('/appointments/:id', async (req, res) => {
+      const {id} = req.params
+
+      const result = await appointmentCollection.findOne({id : id})
+      res.json(result)
+    })
+
     // featured doctors
     app.get('/featuredDoc', async (req, res) => {
 
