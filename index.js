@@ -29,19 +29,35 @@ async function run() {
 
     const db = client.db('doc-appoint-a9');
     const appointmentCollection = db.collection('appointments');
+    const bookingCollection = db.collection('bookings');
 
-    // all appointments
+    // get all appointments
     app.get('/appointments', async (req, res) => {
       const result = await appointmentCollection.find().toArray();
       res.json(result)
     })
 
-    // single appointments
+    // get single appointments
     app.get('/appointments/:id', async (req, res) => {
-      const {id} = req.params
+      const { id } = req.params
 
-      const result = await appointmentCollection.findOne({id : id})
+      const result = await appointmentCollection.findOne({ id: id })
       res.json(result)
+    })
+
+    // post bookings
+    app.post('/bookings', async (req, res) => {
+      const bookingData = req.body
+      const result = await bookingCollection.insertOne(bookingData);
+      res.json(result);
+    })
+
+    // get bookings by uid 
+    app.get('/bookings/:uid', async (req, res) => {
+      const { uid } = req.params
+      
+      const result = await bookingCollection.find({userID: uid}).toArray();
+      res.json(result);
     })
 
     // featured doctors
