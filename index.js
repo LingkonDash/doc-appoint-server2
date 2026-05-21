@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { createRemoteJWKSet, jwtVerify } = require('jose-cjs');
 const app = express();
 
 dotenv.config();
@@ -20,6 +21,34 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+const JWKS = createRemoteJWKSet(
+  new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/jwks`)
+);
+
+const verifyToken = async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const { payload } = await jwtVerify(token, JWKS);
+
+    req.user = payload;
+
+    next();
+
+  } catch (e) {
+    console.log(e);
+
+    return res.status(403).json({
+      message: "Forbidden",
+    });
+  }
+};
 
 // Mongo run() function
 async function run() {
@@ -38,7 +67,7 @@ async function run() {
     })
 
     // get single appointments
-    app.get('/appointments/:id', async (req, res) => {
+    app.get('/appointments/:id', verifyToken, async (req, res) => {
       const { id } = req.params
 
       const result = await appointmentCollection.findOne({ id: id })
@@ -46,14 +75,14 @@ async function run() {
     })
 
     // post bookings
-    app.post('/bookings', async (req, res) => {
+    app.post('/bookings', verifyToken, async (req, res) => {
       const bookingData = req.body
       const result = await bookingCollection.insertOne(bookingData);
       res.json(result);
     })
 
     // update booking
-    app.patch('/bookings/:id', async (req, res) => {
+    app.patch('/bookings/:id', verifyToken, async (req, res) => {
       const { id } = req.params;
       const updatedData = req.body;
 
@@ -64,7 +93,7 @@ async function run() {
     })
 
     // delete booking
-    app.delete('/bookings/:id', async (req, res) => {
+    app.delete('/bookings/:id', verifyToken, async (req, res) => {
 
       const { id } = req.params;
 
@@ -74,7 +103,7 @@ async function run() {
     });
 
     // get bookings by uid 
-    app.get('/bookings/:uid', async (req, res) => {
+    app.get('/bookings/:uid', verifyToken, async (req, res) => {
       const { uid } = req.params
 
       const result = await bookingCollection.find({ userID: uid }).toArray();
