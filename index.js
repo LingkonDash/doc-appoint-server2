@@ -54,7 +54,7 @@ const verifyToken = async (req, res, next) => {
 async function run() {
   try {
 
-    await client.connect();
+    // await client.connect();
 
     const db = client.db('doc-appoint-a9');
     const appointmentCollection = db.collection('appointments');
