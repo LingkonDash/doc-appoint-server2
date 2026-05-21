@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 
 dotenv.config();
@@ -52,11 +52,21 @@ async function run() {
       res.json(result);
     })
 
+    app.patch('/bookings/:id', async (req, res) => {
+      const { id } = req.params;
+      const updatedData = req.body; 
+      
+      const filter = { _id: new ObjectId(id) };
+
+      const result = await bookingCollection.updateOne(filter, { $set: updatedData });
+      res.json(result);
+    })
+
     // get bookings by uid 
     app.get('/bookings/:uid', async (req, res) => {
       const { uid } = req.params
-      
-      const result = await bookingCollection.find({userID: uid}).toArray();
+
+      const result = await bookingCollection.find({ userID: uid }).toArray();
       res.json(result);
     })
 
