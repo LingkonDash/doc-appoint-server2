@@ -52,15 +52,26 @@ async function run() {
       res.json(result);
     })
 
+    // update booking
     app.patch('/bookings/:id', async (req, res) => {
       const { id } = req.params;
-      const updatedData = req.body; 
-      
+      const updatedData = req.body;
+
       const filter = { _id: new ObjectId(id) };
 
       const result = await bookingCollection.updateOne(filter, { $set: updatedData });
       res.json(result);
     })
+
+    // delete booking
+    app.delete('/bookings/:id', async (req, res) => {
+
+      const { id } = req.params;
+
+      const filter = { _id: new ObjectId(id) };
+      const result = await bookingCollection.deleteOne(filter);
+      res.json(result);
+    });
 
     // get bookings by uid 
     app.get('/bookings/:uid', async (req, res) => {
