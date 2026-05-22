@@ -60,11 +60,16 @@ async function run() {
     const appointmentCollection = db.collection('appointments');
     const bookingCollection = db.collection('bookings');
 
-    // get all appointments
     app.get('/appointments', async (req, res) => {
-      const result = await appointmentCollection.find().toArray();
-      res.json(result)
-    })
+      const { search } = req.query;
+
+      const query = search
+        ? { name: { $regex: search, $options: "i" } }
+        : {};
+
+      const result = await appointmentCollection.find(query).toArray();
+      res.json(result);
+    });
 
     // get single appointments
     app.get('/appointments/:id', verifyToken, async (req, res) => {
